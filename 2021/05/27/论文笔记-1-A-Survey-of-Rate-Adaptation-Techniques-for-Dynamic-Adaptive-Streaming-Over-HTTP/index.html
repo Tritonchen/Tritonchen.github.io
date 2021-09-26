@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"tritonchen.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）写在前面的话&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;这是论文笔记系类的第一篇博客，同时也是实际意义上我博客的第一篇博文。这个系列一方面是为了做个记录在以后遗忘了看过的文献后回来看看，便于回顾；">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）">
+<meta property="og:url" content="http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP/index.html">
+<meta property="og:site_name" content="Tritonchen">
+<meta property="og:description" content="A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）写在前面的话&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;这是论文笔记系类的第一篇博客，同时也是实际意义上我博客的第一篇博文。这个系列一方面是为了做个记录在以后遗忘了看过的文献后回来看看，便于回顾；">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/dash.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/1.jpg">
+<meta property="article:published_time" content="2021-05-27T03:20:20.000Z">
+<meta property="article:modified_time" content="2021-05-31T02:28:02.522Z">
+<meta property="article:author" content="Tritonchen">
+<meta property="article:tag" content="论文笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/dash.png">
+
+<link rel="canonical" href="http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上） | Tritonchen</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Tritonchen</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Tritonchen">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tritonchen">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-05-27 11:20:20" itemprop="dateCreated datePublished" datetime="2021-05-27T11:20:20+08:00">2021-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-31 10:28:02" itemprop="dateModified" datetime="2021-05-31T10:28:02+08:00">2021-05-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP（上）"><a href="#A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP（上）" class="headerlink" title="A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）"></a>A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）</h1><h2 id="写在前面的话"><a href="#写在前面的话" class="headerlink" title="写在前面的话"></a>写在前面的话</h2><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这是论文笔记系类的第一篇博客，同时也是实际意义上我博客的第一篇博文。这个系列一方面是为了做个记录在以后遗忘了看过的文献后回来看看，便于回顾；另一方面也是丰富博客内容的同时加深对文献的理解。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在本文中，翻译性文字会以<font color=#A52A2A>颜色</font>显示。另外因为原文本身就是点到为止的综述文章，所以在此基础上的论文笔记会比较简略，对于其中部分技术甚至会略过不再提及。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如果想要更加详细的阅读原文，请自行前往地址查看：<a target="_blank" rel="noopener" href="https://ieeexplore.ieee.org/abstract/document/7884970">A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP</a></p>
+<br>
+
+<h2 id="主题与摘要"><a href="#主题与摘要" class="headerlink" title="主题与摘要"></a>主题与摘要</h2><h3 id="主题"><a href="#主题" class="headerlink" title="主题"></a>主题</h3><p><font color=#A52A2A size=5><center>HTTP动态自适应流技术综述</center></font></p>
+<h3 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h3><p><font color=#A52A2A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在过去的十年中，视频流已经从用户数据报协议过渡到基于传输控制协议的技术。HTTP上的动态自适应流（DASH）最近成为互联网视频流的标准。提出了一系列适用于DASH系统的速率自适应机制，以提供与动态网络条件下的吞吐量相匹配的视频质量，从而获得更丰富的用户体验。这篇综述文章着眼于正在兴起的关于客户端、服务器端和网络速率适配器技术在支持基于DASH的内容交付方面的应用的研究。我们提供了应用这些技术的背景和动机，并回顾了过去十年文献中的重要工作。这些工作根据所使用的反馈信号和执行或协助自适应的终端节点进行分类。我们还回顾了几个值得注意的视频传输测量和特性研究，并概述了该领域的开放性研究问题。</font></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文作为动态自适应流媒体的综述文章，整体围绕着DASH展开，分析行业的发展过程和DASH的优势以及相关技术，并对后续开放性问题做了展望。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文结构分为7个部分，其中介绍、背景和最后的总结占3个部分，另外4个部分主要内容分别是： </p>
+<p>1）DASH技术的结构设计、标准化和应用说明（第三部分）</p>
+<p>2）基于客户端自适应技术，主要从基于吞吐量、基于缓冲区和基于混合/控制理论三个方面比较（第四部分）</p>
+<p>3）服务器端应用层，传输层和网络层优化基于DASH的方案（第五部分）</p>
+<p>4）对于基于DASH的几个著名视频流的流量评估模型和特性研究（第六部分）</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;下面我们将分别对这这7个部分的内容做进一步的梳理性记录。</p>
+<h2 id="介绍与背景"><a href="#介绍与背景" class="headerlink" title="介绍与背景"></a>介绍与背景</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;大多数早期的工作集中在增强用户数据报协议（UDP）以实现多媒体的传输。这是因为TCP更倾向于可靠性而不是及时性，并且它的拥塞控制倾向于引起高排队延迟。但是另一方面来说，它可以穿越任何支持基于HTTP的常规通信的网络路径。因此，近年来TCP已迅速取代UDP成为多媒体传输的标准。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;随之应运而生的MPEG-DASH（Dynamic Adaptive Streaming over HTTP）已经成为一个标准，其目的是使用应用层自适应比特率（ABR）算法向具有动态网络条件和异构设备的用户提供不间断的视频流服务。DASH规范不强制执行任何特定的自适应算法，这为ABR开发提供了灵活性。这篇文章根据这些算法使用的反馈信号和用来服务应用的终端节点对这些速率自适应技术进行分类。</p>
+<h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><h4 id="网络视频传输"><a href="#网络视频传输" class="headerlink" title="网络视频传输"></a>网络视频传输</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了避免网络视频卡顿，而不必引入昂贵和复杂的保证带宽机制，目前提出了以下解决方案用于尝试将视频比特率与可用网络带宽相匹配：</p>
+<font color=A52A2A>
+
+<p>1）使用播放缓冲区：使用播放缓冲区可以克服网络吞吐量的短期变化。<br>视频播放器可以对存储在播放缓冲区中的预取数据进行解码。</p>
+<p>2）基于转码的解决方案：这些解决方案改变原始视频数据压缩算法的一个或多个参数，以改变结果比特率。示例包括改变视频分辨率、压缩比或帧速率。然而，这个过程是计算密集型的，需要复杂的硬件支持。</p>
+<p>3）可扩展编码解决方案：这些解决方案通过处理编码视频数据来实现。因此，可以通过使用编码器的可伸缩性特征来动态地调整编码视频。一些技术包括调整图片分辨率或帧速率（通过利用编码数据中的空间或时间可伸缩性）。但是，需要专门的服务器来实现这些解决方案。</p>
+<p>4）流交换解决方案：此技术是CDN中实现和使用最简单的技术。对原始视频数据进行预处理，以产生多个编码流，每个流的比特率不同，从而产生相同内容的多个版本。然后使用客户端自适应算法根据传输过程中的网络条件选择最合适的速率。这些解决方案不需要专门的服务器，并且使用最少的处理能力。<br></font></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;考虑到部署的可行性，业界已着手使用播放缓冲区和流交换解决方案。文章还简述了速率适配协议（RAP）和TCP友好速率控制（TFRC）之类配置在传输层顶的协议使得发送方负责根据从网络或接收器接收到的反馈来改变发送速率，从而保证缓冲区不被耗尽。</p>
+<h4 id="视频流发展"><a href="#视频流发展" class="headerlink" title="视频流发展"></a>视频流发展</h4><p><font color=A52A2A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;互联网最初不是为高质量多媒体流等现代带宽密集型应用的稳定传输而设计的。传统数据流量与视频流量的根本区别在于对视频流量的实时性约束。早期关于分组视频传输的大部分工作集中于使用支持资源预留和服务质量（QoS）的技术提供实时传输，例如资源预留协议（RSVP）和综合服务（IntServ）。其他协议，如实时传输协议（RTP）、实时流协议（RTSP）、会话描述协议（SDP）、RTP控制协议（RTCP）是多年来开发的，以支持UDP上的实时流，并配置/控制支持视频流的终端系统。然而，这些技术在穿越nat和防火墙时存在问题，它们需要专用的服务器和网络基础设施，这增加了部署成本和复杂性。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;反之，TCP是一种可靠的协议，保证了数据的传输。然而，这种可靠性是以发送方等待确认（ACK）和重新传输丢失数据时的可变延迟为代价的。由于视频通常不允许延迟，并且通常不需要高可靠性才能被接受，TCP最初被认为不适合多媒体传输。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这激发了大量的工作来扩展UDP承载视频流并与常规TCP通信共存的能力。</p>
+</font>
+如：
+
+<p>1）RTP和多播</p>
+<p>2）P2P点对点流媒体</p>
+<p>3）HTTP视频流</p>
+<br>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DASH和早期的这些多媒体流协议的主要区别在于：</p>
+<p>1）与早期的基于UDP的方案不同，DASH构建在TCP传输之上。</p>
+<p>2）客户机驱动算法。根据其ABR，客户机通常根据观察到的网络条件请求视频比特率，从而调节服务器的传输速率。</p>
+<p>3）DASH以多秒视频块而不是连续的视频数据包流的形式请求和接收视频数据。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尽管上述各种视频流技术仍在使用中，但视频流行业目前已将DASH作为互联网视频传输的主要组成部分。文章在第三节详细介绍了当前的DASH架构和生态系统。</p>
+<h2 id="DSAH"><a href="#DSAH" class="headerlink" title="DSAH"></a>DSAH</h2><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这一节介绍DASH及其应用程序的体系结构概述、使用HTTP的好处以及驱动速率自适应算法的一般原则。</p>
+<h3 id="结构概述"><a href="#结构概述" class="headerlink" title="结构概述"></a>结构概述</h3><p><img src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/dash.png" alt="dash"></p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在DASH系统中，视频被不同的比特率编码成多个版本，然后将每个视频编码分为许多含有几秒钟视频的小视频段或块。随后将来自不同比特率的视频块在时间线上对其，以便客户端切换比特率。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;DASH并不直接控制视频传输速率，而是依赖于底层的TCP算法。当流会话启动时，客户端先请求MPD文件，再请求视频块，以尽可能快的速度用视频块填充满播放缓冲区。一旦缓冲区被填满，就会进入一个稳定的状态。在稳定状态下，播放器在下载块时处于打开状态，否则处于关闭状态。客户端通常在缓冲区中保留一些块，以保持足够的播放。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;客户机在启动期间快速提升其视频比特率请求，以预填充其播放缓冲区。当客户机检测到带宽容量减少时（通过利用以前块的反馈信号），它通过请求较低的视频比特率来“回退”。当网络容量再次增加时，它将恢复其视频质量。因此，客户端能够无限制地流式传输视频接缝，而不必过度配置网络或保留超大的播放缓冲区。</p>
+<h3 id="实时流媒体"><a href="#实时流媒体" class="headerlink" title="实时流媒体"></a>实时流媒体</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;点播流媒体和直播流媒体的主要区别在于内容生成时间。在点播流中，服务器上的所有内容都是在流到客户端之前预先生成的，而在直播流中，媒体内容是动态生成的。</p>
+<h3 id="移动端流媒体"><a href="#移动端流媒体" class="headerlink" title="移动端流媒体"></a>移动端流媒体</h3><font color=A52A2A>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;移动/蜂窝流媒体移动视频流量占移动总流量的比例越来越大，2015年占移动总流量的一半以上，预计2020年将达到75%。
+由于有限的蜂窝覆盖、导致高延迟的路径特性的不可预测性以及移动设备的异质性（例如，不同的CPU功率、屏幕分辨率），使用快速移动/蜂窝网络到移动设备（如智能手机、平板电脑、膝上型电脑）的流媒体带来了额外的挑战。与固定网络相比，移动网络中带宽的高度可变和资源的有限意味着TCP的行为可能不同，进而影响ABR的选择过程。与有线网络相比，移动网络通常具有更高的延迟、更大的拥塞和更高的丢包率，从而导致更多的TCP重传，从而降低了视频数据包到达的及时性。参考文献概述了移动内容交付体系结构，并讨论了各种方法，包括传统的RTSP/RTP、渐进式HTTP下载、有节奏的HTTP下载、用于向移动设备交付点播和实时视频内容的基于HTTP的自适应流。
+</font>
+
+<h3 id="标准化"><a href="#标准化" class="headerlink" title="标准化"></a>标准化</h3><font color=A52A2A>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MPEG-DASH已被3GPP标准化（2009年1月首次作为工作项开放，2010年3月最终确定），并于2012年成为自适应流媒体的ISO/IEC（国际电工委员会）标准。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;该标准定义了媒体表示、分段和清单文件（MPD）的标准XML格式集合的准则。然而，特定的客户端实现和速率适配技术不是标准的一部分。因此，使用DASH的商业流服务实现了自己的专有技术，用于媒体表示和客户端适配。
+</font>
+
+<h3 id="http的优势"><a href="#http的优势" class="headerlink" title="http的优势"></a>http的优势</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过在TCP之上使用HTTP，DASH相较于其他方案有以下优势：</p>
+<p>1)客户端使用标准HTTP协议，该协议提供了更普遍的覆盖范围，因为HTTP流量可以穿越NAT和防火墙。</p>
+<p>2)DASH服务器是常规的商品Web服务器，可显著降低运营成本，并允许部署缓存以提高性能和降低网络负载。</p>
+<p>3)客户端独立请求每个视频块，并维护回放会话状态，因此服务器不需要跟踪会话状态。在客户端维护会话状态意味着客户端可以从多个服务器检索视频块，并在商品HTTP服务器之间进行负载平衡和容错。</p>
+<p>4)依赖于TCP可靠性和流间友好性，提高了流式传输流量与其他流量共享时仅消耗相当一部分网络带宽的可能性。</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;此外，这一章还讨论了<font color=A52A2A>QoE指标</font>与<font color=A52A2A>ABR的一般原则和目标</font>。但是这两项在很多地方可以了解到，在此不做赘述说明。</p>
+<h2 id="客户端自适应速率"><a href="#客户端自适应速率" class="headerlink" title="客户端自适应速率"></a>客户端自适应速率</h2><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;客户端ABR算法可以根据其使用的反馈信号大致分为三类：基于吞吐量的、基于缓冲区的和基于混合/控制理论的。</p>
+<h3 id="吞吐量"><a href="#吞吐量" class="headerlink" title="吞吐量"></a>吞吐量</h3><h4 id="1）基于TCP-Like-AIMD"><a href="#1）基于TCP-Like-AIMD" class="headerlink" title="1）基于TCP-Like-AIMD"></a>1）基于TCP-Like-AIMD</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Liu等人提出了一种使用平滑的HTTP/TCP吞吐量度量和TFRC/TCP-Like-AIMD（表示的保守逐步向上切换和主动向下切换）速率自适应的方法。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这种方法不需要传输层信息，如丢包率和RTT。该方法能够使用平滑的吞吐量测量来探测空闲网络容量和检测拥塞。它将区块传输（获取）时间与区块中包含的媒体播放时间进行比较。其基本原理是，多秒钟的数据块足以消除TCP吞吐量的短期变化。采用逐级切换法（加法递增法）选择更高的表示法来探测备用网络容量。在检测到网络拥塞时，采用了一种积极的关闭（乘法减少）方法来防止断流。该算法还考虑了空闲时间的计算，以防止客户端缓冲区溢出，从而节省网络带宽和内存资源。</p>
+<h4 id="2）Festival"><a href="#2）Festival" class="headerlink" title="2）Festival"></a>2）Festival</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;使用Adobe的开放源代码媒体框架（OSMF）实现，实现开销低，不需要修改网络或服务器。并且对于共享瓶颈的玩家数量、带宽变化的增加以及可用的比特率集都具有很强的鲁棒性。</p>
+<h4 id="3）CS2P"><a href="#3）CS2P" class="headerlink" title="3）CS2P"></a>3）CS2P</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过使用数据驱动的吞吐量预测算法来改进视频客户端的比特率选择和自适应。</p>
+<h3 id="缓冲区"><a href="#缓冲区" class="headerlink" title="缓冲区"></a>缓冲区</h3><h4 id="1）基于缓冲区的速率选择"><a href="#1）基于缓冲区的速率选择" class="headerlink" title="1）基于缓冲区的速率选择"></a>1）基于缓冲区的速率选择</h4><h4 id="2）基于阈值的缓冲区"><a href="#2）基于阈值的缓冲区" class="headerlink" title="2）基于阈值的缓冲区"></a>2）基于阈值的缓冲区</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Miller等人提出了一种算法，使用三个阈值级别作为播放缓冲区.目标间隔Btarget介于Blow和Bhigh之间，最佳间隔Boptimum是目标间隔的中心。</p>
+<h4 id="3）基于缓冲区占用的Lyapunov算法"><a href="#3）基于缓冲区占用的Lyapunov算法" class="headerlink" title="3）基于缓冲区占用的Lyapunov算法"></a>3）基于缓冲区占用的Lyapunov算法</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spiteri等人将ABR描述为效用最大化问题，并设计了一种在线控制算法，使用Lyapunov优化技术最小化回馈和干扰</p>
+<h4 id="4）-ABMA-（自适应和缓冲区管理算法）"><a href="#4）-ABMA-（自适应和缓冲区管理算法）" class="headerlink" title="4） ABMA+（自适应和缓冲区管理算法）"></a>4） ABMA+（自适应和缓冲区管理算法）</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据预先设定的视频冻结概率（从缓冲区占用情况推断）选择视频表示速率。它连续估计段下载时间特性，并使用预先计算的播放缓冲区映射来选择最大的视频表示，以保证内容播放的平滑。使用预先计算的缓冲区映射可以最大限度地降低计算成本，并简化在不同终端上的部署。</p>
+<h3 id="混合控制理论"><a href="#混合控制理论" class="headerlink" title="混合控制理论"></a>混合控制理论</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;基于控制理论的ABR启发式算法将吞吐量估计和缓冲区占用作为网络条件的指标，并反复（重新）求解控制理论/随机最优控制方程，以选择满足用户QoE偏好的表示率。</p>
+<h4 id="1）平滑速率自适应"><a href="#1）平滑速率自适应" class="headerlink" title="1）平滑速率自适应"></a>1）平滑速率自适应</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;控制播放缓冲区占用，使其保持在一个参考水平，并使用当前缓冲区水平和参考水平之间的差异来驱动控制回路。然后，可以导出预测视频速率的方程，作为缓冲区大小差和估计TCP吞吐量的函数，而估计TCP吞吐量又结合实际TCP吞吐量来确定缓冲区占用水平，从而关闭控制环路。</p>
+<h4 id="2）PANDA"><a href="#2）PANDA" class="headerlink" title="2）PANDA"></a>2）PANDA</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过设置目标平均数据速率来探测网络，然后该数据速率随后用于确定下一个视频块比特率和随后的请求间隔。其AIMD探测机制类似于TCP拥塞控制。</p>
+<h4 id="3）SQUAD"><a href="#3）SQUAD" class="headerlink" title="3）SQUAD"></a>3）SQUAD</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;基于频谱的DASH质量自适应（SQUAD）技术，该技术同时使用了吞吐量和缓冲区反馈来开发基于频谱的质量自适应技术，以确保高QoE。</p>
+<h4 id="4）-SABRE"><a href="#4）-SABRE" class="headerlink" title="4） SABRE"></a>4） SABRE</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;从应用层动态地调整DASH客户机中的TCP接收窗口（rwnd），以便从服务器到客户机的突发大小有效地减少到家庭路由器的平均队列大小。其关键技术有：HTTP流水线、视频块下载速率控制和双退避或重填充操作模式。</p>
+<h4 id="5）模型预测控制"><a href="#5）模型预测控制" class="headerlink" title="5）模型预测控制"></a>5）模型预测控制</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一种基于模型预测控制（MPC）的算法，可以将吞吐量和缓冲区占用反馈信号进行最优组合，并将速率选择问题描述为随机最优控制问题。</p>
+<h4 id="6）ELASTIC（反馈线性化自适应流控制器）"><a href="#6）ELASTIC（反馈线性化自适应流控制器）" class="headerlink" title="6）ELASTIC（反馈线性化自适应流控制器）"></a>6）ELASTIC（反馈线性化自适应流控制器）</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;它使用的反馈控制理论不会产生开关流量模式，与使用两个控制器（一个用于调节视频比特率，另一个用于调节缓冲区级别）的传统方法不同，ELASTIC仅使用一个计算视频比特率级别的控制器来将播放缓冲区驱动到固定的设置点。</p>
+<h3 id="后续部分请见-论文笔记1-下"><a href="#后续部分请见-论文笔记1-下" class="headerlink" title="后续部分请见 论文笔记1-下"></a>后续部分请见 论文笔记1-下</h3><p><img src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/1.jpg" alt="1"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" rel="tag"># 论文笔记</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/05/25/my-first-blog/" rel="prev" title="My first blog">
+      <i class="fa fa-chevron-left"></i> My first blog
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A%20Survey%20of%20Rate%20Adaptation%20Techniques%20for%20Dynamic%20Adaptive%20Streaming%20%20%20Over%20HTTP%EF%BC%88%E4%B8%8B%EF%BC%89/" rel="next" title="论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over （下）">
+      论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over （下） <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP%EF%BC%88%E4%B8%8A%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2%E7%9A%84%E8%AF%9D"><span class="nav-number">1.1.</span> <span class="nav-text">写在前面的话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BB%E9%A2%98%E4%B8%8E%E6%91%98%E8%A6%81"><span class="nav-number">1.2.</span> <span class="nav-text">主题与摘要</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BB%E9%A2%98"><span class="nav-number">1.2.1.</span> <span class="nav-text">主题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%91%98%E8%A6%81"><span class="nav-number">1.2.2.</span> <span class="nav-text">摘要</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D%E4%B8%8E%E8%83%8C%E6%99%AF"><span class="nav-number">1.3.</span> <span class="nav-text">介绍与背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.3.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.3.2.</span> <span class="nav-text">背景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E8%A7%86%E9%A2%91%E4%BC%A0%E8%BE%93"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">网络视频传输</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A7%86%E9%A2%91%E6%B5%81%E5%8F%91%E5%B1%95"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">视频流发展</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DSAH"><span class="nav-number">1.4.</span> <span class="nav-text">DSAH</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">结构概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E6%97%B6%E6%B5%81%E5%AA%92%E4%BD%93"><span class="nav-number">1.4.2.</span> <span class="nav-text">实时流媒体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E7%AB%AF%E6%B5%81%E5%AA%92%E4%BD%93"><span class="nav-number">1.4.3.</span> <span class="nav-text">移动端流媒体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%87%E5%87%86%E5%8C%96"><span class="nav-number">1.4.4.</span> <span class="nav-text">标准化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#http%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="nav-number">1.4.5.</span> <span class="nav-text">http的优势</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96"><span class="nav-number">1.4.6.</span> <span class="nav-text">其他</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E8%87%AA%E9%80%82%E5%BA%94%E9%80%9F%E7%8E%87"><span class="nav-number">1.5.</span> <span class="nav-text">客户端自适应速率</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%9E%E5%90%90%E9%87%8F"><span class="nav-number">1.5.1.</span> <span class="nav-text">吞吐量</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%EF%BC%89%E5%9F%BA%E4%BA%8ETCP-Like-AIMD"><span class="nav-number">1.5.1.1.</span> <span class="nav-text">1）基于TCP-Like-AIMD</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%EF%BC%89Festival"><span class="nav-number">1.5.1.2.</span> <span class="nav-text">2）Festival</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%EF%BC%89CS2P"><span class="nav-number">1.5.1.3.</span> <span class="nav-text">3）CS2P</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">1.5.2.</span> <span class="nav-text">缓冲区</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%EF%BC%89%E5%9F%BA%E4%BA%8E%E7%BC%93%E5%86%B2%E5%8C%BA%E7%9A%84%E9%80%9F%E7%8E%87%E9%80%89%E6%8B%A9"><span class="nav-number">1.5.2.1.</span> <span class="nav-text">1）基于缓冲区的速率选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%EF%BC%89%E5%9F%BA%E4%BA%8E%E9%98%88%E5%80%BC%E7%9A%84%E7%BC%93%E5%86%B2%E5%8C%BA"><span class="nav-number">1.5.2.2.</span> <span class="nav-text">2）基于阈值的缓冲区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%EF%BC%89%E5%9F%BA%E4%BA%8E%E7%BC%93%E5%86%B2%E5%8C%BA%E5%8D%A0%E7%94%A8%E7%9A%84Lyapunov%E7%AE%97%E6%B3%95"><span class="nav-number">1.5.2.3.</span> <span class="nav-text">3）基于缓冲区占用的Lyapunov算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4%EF%BC%89-ABMA-%EF%BC%88%E8%87%AA%E9%80%82%E5%BA%94%E5%92%8C%E7%BC%93%E5%86%B2%E5%8C%BA%E7%AE%A1%E7%90%86%E7%AE%97%E6%B3%95%EF%BC%89"><span class="nav-number">1.5.2.4.</span> <span class="nav-text">4） ABMA+（自适应和缓冲区管理算法）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E6%8E%A7%E5%88%B6%E7%90%86%E8%AE%BA"><span class="nav-number">1.5.3.</span> <span class="nav-text">混合控制理论</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%EF%BC%89%E5%B9%B3%E6%BB%91%E9%80%9F%E7%8E%87%E8%87%AA%E9%80%82%E5%BA%94"><span class="nav-number">1.5.3.1.</span> <span class="nav-text">1）平滑速率自适应</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%EF%BC%89PANDA"><span class="nav-number">1.5.3.2.</span> <span class="nav-text">2）PANDA</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%EF%BC%89SQUAD"><span class="nav-number">1.5.3.3.</span> <span class="nav-text">3）SQUAD</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4%EF%BC%89-SABRE"><span class="nav-number">1.5.3.4.</span> <span class="nav-text">4） SABRE</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5%EF%BC%89%E6%A8%A1%E5%9E%8B%E9%A2%84%E6%B5%8B%E6%8E%A7%E5%88%B6"><span class="nav-number">1.5.3.5.</span> <span class="nav-text">5）模型预测控制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6%EF%BC%89ELASTIC%EF%BC%88%E5%8F%8D%E9%A6%88%E7%BA%BF%E6%80%A7%E5%8C%96%E8%87%AA%E9%80%82%E5%BA%94%E6%B5%81%E6%8E%A7%E5%88%B6%E5%99%A8%EF%BC%89"><span class="nav-number">1.5.3.6.</span> <span class="nav-text">6）ELASTIC（反馈线性化自适应流控制器）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8E%E7%BB%AD%E9%83%A8%E5%88%86%E8%AF%B7%E8%A7%81-%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B01-%E4%B8%8B"><span class="nav-number">1.5.4.</span> <span class="nav-text">后续部分请见 论文笔记1-下</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Tritonchen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tritonchen</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
