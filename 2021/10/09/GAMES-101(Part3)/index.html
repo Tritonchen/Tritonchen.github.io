@@ -13,8 +13,6 @@
       />
       <title>图形学GAMES-101 课堂笔记（三）- 《相对简单》 |  Tritonchen</title>
   <meta name="generator" content="hexo-theme-ayer">
-      
-      <link rel="shortcut icon" href="/logo1.jpg" />
        
 <link rel="stylesheet" href="/dist/main.css">
 
@@ -76,13 +74,17 @@
     <div class="article-meta">
       <a href="/2021/10/09/GAMES-101(Part3)/" class="article-date">
   <time datetime="2021-10-09T08:19:52.000Z" itemprop="datePublished">2021-10-09</time>
-</a>   
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+  </div>
+  
 <div class="word_count">
     <span class="post-time">
         <span class="post-meta-item-icon">
             <i class="ri-quill-pen-line"></i>
             <span class="post-meta-item-text"> 字数统计:</span>
-            <span class="post-count">77</span>
+            <span class="post-count">354</span>
         </span>
     </span>
 
@@ -107,7 +109,15 @@
     <div class="article-entry" itemprop="articleBody">
        
   <h1 id="图形学后续（part-3）"><a href="#图形学后续（part-3）" class="headerlink" title="图形学后续（part-3）"></a>图形学后续（part-3）</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>GAMES101 现代计算机图形学入门<br/><br>主讲老师：闫令琪，UCSB<br/><br>课程主页：<a target="_blank" rel="noopener" href="https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html">https://sites.cs.ucsb.edu/~lingqi/teaching/games101.html</a><br/><br><br/><br>该笔记对应此课程Lecture17之后的内容，用闫老师的话来说，属于相对简单的后续部分。</p>
-<h2 id="材质表现"><a href="#材质表现" class="headerlink" title="材质表现"></a>材质表现</h2> 
+<h2 id="材质表现"><a href="#材质表现" class="headerlink" title="材质表现"></a>材质表现</h2><h3 id="BRDF"><a href="#BRDF" class="headerlink" title="BRDF"></a>BRDF</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;对于一个不存在吸收的朗伯表面————入射能量在所有方向均匀反射，那么入射与出射的辐射率遵循能量守恒。在这样的条件下，渲染方程可以解出：</p>
+<center><img src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/20211010195120.png"  width="70%" height="70%" align="bottom" /><br/><br/></center>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最终BRDF解得为1/Π。考虑到不同颜色的吸收率不同，因此我们引入albedo作为吸收率，不同的颜色就会得到不同的BRDF.
+
+<h3 id="折射（Specular-refraction）"><a href="#折射（Specular-refraction）" class="headerlink" title="折射（Specular refraction）"></a>折射（Specular refraction）</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过折射率可以计算出折射角的余弦：</p>
+<center><img src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/20211010202001.png"  width="70%" height="70%" align="bottom" /><br/><br/></center>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;当根号内部小于零时，我们无法求得一个有意义的实数解，这时则说明光线发生了全反射，不再存在折射光（经典回顾高中嗷）。条件由ηi和ηt决定，即当入射介质折射率大于出射介质折射率时，可能发生全反射。其中一个经典例子是水底向上看只能得到一个锥形区域的入射光，叫做Snell's Window：
+<center><img src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/20211010202440.png"  width="70%" height="70%" align="bottom" /><br/><br/></center>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
       <!-- reward -->
       
       <div id="reword-out">
@@ -190,6 +200,15 @@
    
   <nav class="article-nav">
     
+      <a href="/2021/10/13/attention/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            Attention入门笔记（一）
+          
+        </div>
+      </a>
+    
     
       <a href="/2021/09/26/GAMES-101(Part2)/" class="article-nav-link">
         <strong class="article-nav-caption">下一篇</strong>
@@ -257,7 +276,7 @@
     <ul>
       <li>
         Copyrights &copy;
-        2021
+        2015-2021
         <i class="ri-heart-fill heart_icon"></i> Tritonchen
       </li>
     </ul>
@@ -362,6 +381,11 @@
   <p class="reward-p"><i class="ri-cup-line"></i>请我喝杯咖啡吧~</p>
   <div class="reward-box">
     
+    
+    <div class="reward-item">
+      <img class="reward-img" src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
     
   </div>
 </div>
