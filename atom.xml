@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Tritonchen</title>
+  
+  
+  <link href="http://tritonchen.github.io/atom.xml" rel="self"/>
+  
+  <link href="http://tritonchen.github.io/"/>
+  <updated>2023-03-23T02:22:09.368Z</updated>
+  <id>http://tritonchen.github.io/</id>
+  
+  <author>
+    <name>Tritonchen</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Diffusion笔记-(1)GAN与VAE</title>
+    <link href="http://tritonchen.github.io/2023/03/22/Diffusion%E7%AC%94%E8%AE%B0-1-GAN%E4%B8%8EVAE/"/>
+    <id>http://tritonchen.github.io/2023/03/22/Diffusion%E7%AC%94%E8%AE%B0-1-GAN%E4%B8%8EVAE/</id>
+    <published>2023-03-22T02:56:35.000Z</published>
+    <updated>2023-03-23T02:22:09.368Z</updated>
+    
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="论文学习 扩散模型" scheme="http://tritonchen.github.io/tags/%E8%AE%BA%E6%96%87%E5%AD%A6%E4%B9%A0-%E6%89%A9%E6%95%A3%E6%A8%A1%E5%9E%8B/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>论文笔记-2  REFORMER:THE EFFICIENT TRANSFORMER</title>
+    <link href="http://tritonchen.github.io/2021/11/17/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-2-REFORMER-THE-EFFICIENT-TRANSFORMER/"/>
+    <id>http://tritonchen.github.io/2021/11/17/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-2-REFORMER-THE-EFFICIENT-TRANSFORMER/</id>
+    <published>2021-11-17T06:57:57.000Z</published>
+    <updated>2021-12-01T07:58:33.161Z</updated>
+    
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="论文笔记" scheme="http://tritonchen.github.io/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Attention入门笔记（一）</title>
+    <link href="http://tritonchen.github.io/2021/10/13/attention/"/>
+    <id>http://tritonchen.github.io/2021/10/13/attention/</id>
+    <published>2021-10-13T13:05:54.000Z</published>
+    <updated>2023-03-23T02:25:42.176Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;Attenetion&quot;&gt;&lt;a href=&quot;#Attenetion&quot; class=&quot;headerlink&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="nlp" scheme="http://tritonchen.github.io/tags/nlp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>图形学GAMES-101 课堂笔记（三）- 《相对简单》</title>
+    <link href="http://tritonchen.github.io/2021/10/09/GAMES-101(Part3)/"/>
+    <id>http://tritonchen.github.io/2021/10/09/GAMES-101(Part3)/</id>
+    <published>2021-10-09T08:19:52.000Z</published>
+    <updated>2021-10-10T12:28:06.212Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;图形学后续（part-3）&quot;&gt;&lt;a href=&quot;#图形学后续（part-3）&quot; class=&quot;headerlink&quot; title=&quot;图形学后续（part-3）&quot;&gt;&lt;/a&gt;图形学后续（part-3）&lt;/h1&gt;&lt;h2 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot;</summary>
+        
+      
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="图形学" scheme="http://tritonchen.github.io/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>图形学GAMES-101 课堂笔记（二）- Ray Tracing</title>
+    <link href="http://tritonchen.github.io/2021/09/26/GAMES-101(Part2)/"/>
+    <id>http://tritonchen.github.io/2021/09/26/GAMES-101(Part2)/</id>
+    <published>2021-09-26T12:36:29.000Z</published>
+    <updated>2021-10-10T12:15:07.533Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;Ray-Tracing（part-2）&quot;&gt;&lt;a href=&quot;#Ray-Tracing（part-2）&quot; class=&quot;headerlink&quot; title=&quot;Ray Tracing（part-2）&quot;&gt;&lt;/a&gt;Ray Tracing（part-2）&lt;/h1&gt;&lt;h2</summary>
+        
+      
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="图形学" scheme="http://tritonchen.github.io/tags/%E5%9B%BE%E5%BD%A2%E5%AD%A6/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）</title>
+    <link href="http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP/"/>
+    <id>http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP/</id>
+    <published>2021-05-27T03:20:20.000Z</published>
+    <updated>2021-10-10T12:15:01.974Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP（上）&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="论文笔记" scheme="http://tritonchen.github.io/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over （下）</title>
+    <link href="http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A%20Survey%20of%20Rate%20Adaptation%20Techniques%20for%20Dynamic%20Adaptive%20Streaming%20%20%20Over%20HTTP%EF%BC%88%E4%B8%8B%EF%BC%89/"/>
+    <id>http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A%20Survey%20of%20Rate%20Adaptation%20Techniques%20for%20Dynamic%20Adaptive%20Streaming%20%20%20Over%20HTTP%EF%BC%88%E4%B8%8B%EF%BC%89/</id>
+    <published>2021-05-27T03:20:20.000Z</published>
+    <updated>2021-10-10T12:14:54.807Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP（下）&quot;&gt;&lt;a</summary>
+        
+      
+    
+    
+    
+    <category term="学习" scheme="http://tritonchen.github.io/categories/%E5%AD%A6%E4%B9%A0/"/>
+    
+    
+    <category term="论文笔记" scheme="http://tritonchen.github.io/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>My first blog</title>
+    <link href="http://tritonchen.github.io/2021/05/25/my-first-blog/"/>
+    <id>http://tritonchen.github.io/2021/05/25/my-first-blog/</id>
+    <published>2021-05-25T08:00:23.000Z</published>
+    <updated>2021-10-10T11:31:32.351Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h1 id=&quot;Markdown记录&quot;&gt;&lt;a href=&quot;#Markdown记录&quot; class=&quot;headerlink&quot; title=&quot;Markdown记录&quot;&gt;&lt;/a&gt;Markdown记录&lt;/h1&gt;&lt;h2 id=&quot;小标题&quot;&gt;&lt;a href=&quot;#小标题&quot;</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+</feed>

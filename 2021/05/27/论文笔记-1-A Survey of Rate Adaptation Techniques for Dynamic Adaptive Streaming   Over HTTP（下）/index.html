@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+
+
+<html lang="zh-CN">
+  
+
+    <head>
+      <meta charset="utf-8" />
+        
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1"
+      />
+      <title>论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over （下） |  Tritonchen</title>
+  <meta name="generator" content="hexo-theme-ayer">
+       
+<link rel="stylesheet" href="/dist/main.css">
+
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/Shen-Yu/cdn/css/remixicon.min.css"
+      />
+      
+<link rel="stylesheet" href="/css/custom.css">
+ 
+      <script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script>
+       
+ 
+
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bulma@5.0.1/bulma.min.css"
+      />
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.19/dist/sweetalert2.min.js"></script>
+
+      <!-- mermaid -->
+      
+      <style>
+        .swal2-styled.swal2-confirm {
+          font-size: 1.6rem;
+        }
+      </style>
+    <link rel="alternate" href="/atom.xml" title="Tritonchen" type="application/atom+xml">
+</head>
+  </html>
+</html>
+
+
+<body>
+  <div id="app">
+    
+      
+    <main class="content on">
+      <section class="outer">
+  <article
+  id="post-论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming   Over HTTP（下）"
+  class="article article-type-post"
+  itemscope
+  itemprop="blogPost"
+  data-scroll-reveal
+>
+  <div class="article-inner">
+    
+    <header class="article-header">
+       
+<h1 class="article-title sea-center" style="border-left:0" itemprop="name">
+  论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over （下）
+</h1>
+ 
+
+      
+    </header>
+     
+    <div class="article-meta">
+      <a href="/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A%20Survey%20of%20Rate%20Adaptation%20Techniques%20for%20Dynamic%20Adaptive%20Streaming%20%20%20Over%20HTTP%EF%BC%88%E4%B8%8B%EF%BC%89/" class="article-date">
+  <time datetime="2021-05-27T03:20:20.000Z" itemprop="datePublished">2021-05-27</time>
+</a> 
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%AD%A6%E4%B9%A0/">学习</a>
+  </div>
+  
+<div class="word_count">
+    <span class="post-time">
+        <span class="post-meta-item-icon">
+            <i class="ri-quill-pen-line"></i>
+            <span class="post-meta-item-text"> 字数统计:</span>
+            <span class="post-count">4.2k</span>
+        </span>
+    </span>
+
+    <span class="post-time">
+        &nbsp; | &nbsp;
+        <span class="post-meta-item-icon">
+            <i class="ri-book-open-line"></i>
+            <span class="post-meta-item-text"> 阅读时长≈</span>
+            <span class="post-count">14 分钟</span>
+        </span>
+    </span>
+</div>
+ 
+    </div>
+      
+    <div class="tocbot"></div>
+
+
+
+
+  
+    <div class="article-entry" itemprop="articleBody">
+       
+  <h1 id="A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP（下）"><a href="#A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP（下）" class="headerlink" title="A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（下）"></a>A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（下）</h1><h2 id="服务器端应用层、传输层以及网络层优化方案"><a href="#服务器端应用层、传输层以及网络层优化方案" class="headerlink" title="服务器端应用层、传输层以及网络层优化方案"></a>服务器端应用层、传输层以及网络层优化方案</h2><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在这个部分，文章讨论了一些现有用来优化基于DASH的多媒体流的服务器端、传输层和网络层方案。尽管由于其易于实现和可扩展性，大多数工作都在客户端提出了自适应比特率选择，但是在优化服务器端比特率选择和拥塞控制方面也做了一些工作。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;文章排除了基于改变表示编码方案的服务器端优化，例如从H.264/AVC（高级视频编码）编解码器转移到SVC（可伸缩视频编码）或HEVC（高效视频编码）编码，以减少存储需求并提高缓存效率。而是只关注服务器端应用层和传输层的优化，以服务于存储在常规Web服务器中的预编码视频块，并研究最近研究文献中提出的替代传输协议和网络解决方案。这里我们对其中一些做记录。</p>
+<h3 id="应用层"><a href="#应用层" class="headerlink" title="应用层"></a>应用层</h3><h4 id="比特率切换"><a href="#比特率切换" class="headerlink" title="比特率切换"></a>比特率切换</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Akhshabi等人提出了一种纯基于服务器的流量整形方法，以减少由于多个播放器争夺瓶颈容量而导致的视频比特率振荡和不稳定性。根本原因是开-关活动模式（取决于播放器开-关周期的时间重叠）导致带宽高估和视频比特率水平之间的振荡。他们开发了一个成形模块，将每个区块的吞吐量限制为区块的编码速率，这样下载持续时间将大致等于区块持续时间，减少/消除了关闭周期（只要可用带宽高于成形速率）。他们的方法旨在稳定播放器，并允许播放器要求最高的视频比特率，而不会导致振荡。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;De Cicco等。提出了一种使用质量自适应控制器 (QAC) 的控制理论服务器端流交换技术。 该方法采用基于客户端反馈的反馈控制理论来提供特定的视频比特率。 QAC 使用两个控制器：播放缓冲区级别控制器，其目标是将缓冲区长度驱动到目标长度； 以及一个流切换逻辑，用于选择要流式传输的适当视频级别。</p>
+<h4 id="视频配速"><a href="#视频配速" class="headerlink" title="视频配速"></a>视频配速</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Satoda等人。引入了一种服务器端自适应视频起搏算法，该算法可以及时提供视频数据，称为“敏捷配速”。 该技术在视频服务器完成发送前一个块后延迟块的传送。 首先，视频服务器立即发送视频块，直到播出缓冲区达到足够的数据量。 随后计算速度延迟。它试图通过控制视频块的发送来使播出缓冲区大小尽可能接近配置值。 该方法解决了由于不必要的数据下载（用户一直看不完视频流）造成的带宽浪费问题。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 该算法处理了预测TCP吞吐量未来随机扩散的特性。 他们的方法不是预测决定性的值，而是通过使用布朗运动模型作为随机过程模型来预测随机吞吐量的扩散。 它在考虑未来吞吐量的同时控制目标播放缓冲区大小。 这种方法允许网络运营商更好地管理视频流量的带宽，同时保持QoE。</p>
+<h3 id="传输层"><a href="#传输层" class="headerlink" title="传输层"></a>传输层</h3><h4 id="选择TCP对DASH的影响"><a href="#选择TCP对DASH的影响" class="headerlink" title="选择TCP对DASH的影响"></a>选择TCP对DASH的影响</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;根据网络带宽、RTT 延迟、队列管理和其他竞争路径容量的交叉流量，块传送的及时性（以及因此的速率）可能会有很大差异。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Huang等，通过分析主要流媒体服务产生的流量来分析 TCP 和 DASH 流量之间的相互作用，并确定了一个他们称之为“下降螺旋”的恶性循环。 这种现象是由于 TCP 将 cwnd 重置为其初始值的事实，因为在 OFF 期间不活动时间长于当前的重传超时（在他们的实验中约为 200 毫秒）。 因此，cwnd 以慢启动模式加速以检索每个新块。 在没有竞争流的情况下，客户端仍然选择最高的可持续视频比特率。 然而，当存在竞争流时，视频流会受到高数据包丢失和低吞吐量的影响，导致客户端选择较低的视频比特率（较小的视频块）。 对于较小的块，TCP 在完成每个块下载之前达到其公平份额的时间较短，从而导致进一步低估可用带宽，从而导致螺旋式下降。</p>
+<h4 id="避免猝发的TCP修饰"><a href="#避免猝发的TCP修饰" class="headerlink" title="避免猝发的TCP修饰"></a>避免猝发的TCP修饰</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了解决传输视频时 TCP 突发性问题导致队列拥塞和数据包丢失，Ghobadi等人设计了 Trickle，通过在 TCP 拥塞窗口上设置一个上限作为流传输速率和 RTT 的函数来调整视频流的速度。 服务器根据观察到的 RTT 和目标流传输速率计算 cwnd 边界，并使用套接字选项应用于 TCP。</p>
+<h4 id="多路径TCP（MPTCP）"><a href="#多路径TCP（MPTCP）" class="headerlink" title="多路径TCP（MPTCP）"></a>多路径TCP（MPTCP）</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在 MPTCP 上运行 DASH 的工作很少。 这部分是由于当底层路径是异构的时多媒体内容的潜在性能会产生下降。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在最近的一项工作中，Corbillon等人利用MPTCP的应用层和传输层之间的相互作用来支持视频流。因此，他们引入了一个跨层调度程序，它利用来自应用程序层和传输层的信息来重新排序数据传输，并对视频中最重要的部分进行优先级排序。他们评估了跨层调度器的性能，这些调度器包含从实际MPTCP会话（以太网、WiFi和蜂窝访问）聚合的跟踪。结果表明，跨层调度器提高了实现的QoE（客户端检索的视频比特率），但仍有效率限制。然而，作者没有考虑DASH中实现的自适应机制。他们工作的基础上，ABR已经选择了视频块表示交付MPTCP。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Han等人最近的另一项工作通过提出多路径DASH（MP-DASH）填补了这一空白，MP-DASH是一种用于DASH流的多路径框架，能够感知用户的网络接口偏好。其基本思想是策略性地安排区块交付，以满足用户的偏好，例如优先选择WiFi而不是蜂窝连接。作者的目标不是用MPTCP改善视频流质量，而是降低整体流成本（例如，按流量计费的蜂窝使用）。MP-DASH设计用于多种ABR，有两个组件：MP-DASH调度程序和视频适配器。调度程序覆盖在MPTCP堆栈的顶部。它根据用户的界面偏好和播放器的视频传输截止时间，在满足用户偏好的前提下，智能地确定多路径下的最佳分块下载策略。视频适配器是一个附加组件，位于DASH ABR和MP-DASH sched  uler之间，通知调度程序请求块的块大小和截止日期。作者将MP-DASH适配器集成到基于吞吐量和基于缓冲区的ABR中。</p>
+<h4 id="TCP-Hollywood和僵化的传输网络"><a href="#TCP-Hollywood和僵化的传输网络" class="headerlink" title="TCP-Hollywood和僵化的传输网络"></a>TCP-Hollywood和僵化的传输网络</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;McQuistin等人提出了TCP-Hollywood，一种无序的、有时间限制的TCP变体，旨在支持实时多媒体通信。他们的分析表明，在时延要求受限的有损条件下（VoIP、视频流），它提高了网络的利用率。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TCP Hollywood与标准TCP兼容，但消除了两种传输引起的延迟，并提供了适合多媒体流应用的可靠性措施。它消除了接收器处的线头（HoL）阻塞，并立即将接收到的数据传递给应用程序，而不管它们的顺序如何，并且放松了可靠性以尊重应用程序提供的时间线，因此只有将及时到达的数据才被重传，否则重传携带新数据。</p>
+<h3 id="网络层"><a href="#网络层" class="headerlink" title="网络层"></a>网络层</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Houdaille和Gouache提出了一种流量整形机制（带宽管理器），允许在住宅家庭网关处进行带宽仲裁，以解决存在并发视频流时比特率不稳定和不公平的问题。流量整形器截获清单文件，为每个流确定理想的目标比特率，然后将客户机限制在其限制范围内。这被描述为为为最大数量的用户提供最佳的QoE。在家庭网关上实现带宽管理器的优点是能够看到和控制进入家庭的所有通信量，并且可以根据设备角色和特性来分配带宽。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;利用Microsoft Smooth Streaming player对上面的方法进行了验证，该方法捕捉到了竞争流的随机性、高比特率变化、不公平的带宽共享。他们表明，他们的方法在稳定性（低比特率切换）、带宽共享精度和收敛速度（达到稳定比特率所需的时间）方面具有优势。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mok等人提出了一种使用带宽测量代理的QoE感知DASH系统（QDASH）。他们还在adobeosmf下进行了主观实验，Apache服务器在Linux-Debian上运行，得出的结论是，用户更喜欢在切换时逐渐改变质量。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QDASH由两个模块组成–QDASH abw和QDASH qoe。QDASH abw是在服务器前面的一个测量代理中实现的，它探测并检测当前网络条件所能支持的最高质量级别。它通过将测量流与视频数据流耦合，操纵视频数据包以形成内联测量。它通过RTT估计来测量可用带宽。在客户端，QDASH qoe帮助客户选择最合适的质量级别，接收QDASH abw测量结果的更新。</p>
+<h4 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;后续文章还讨论了主动队列管理、网络和服务辅助DASH和服务器预选择系统，以及使用Google SPDY、HTTP/2和QUIC的DASH流媒体，在这里我们不再做展开描述。</p>
+<h3 id="流量评估模型和特性研究"><a href="#流量评估模型和特性研究" class="headerlink" title="流量评估模型和特性研究"></a>流量评估模型和特性研究</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在本节中，文章讨论了在测量和描述使用DASH技术提供的视频流量方面所进行的一些关键工作。</p>
+<h4 id="交通模式特征"><a href="#交通模式特征" class="headerlink" title="交通模式特征"></a>交通模式特征</h4><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;为了设计和评估不同的速率自适应方案，有必要了解该方案所要处理的业务的性质。本节讨论的研究探讨长时间和短时间尺度上的视频流量。在长时间尺度上，流行模式（所选视频的分布）最受关注，而在短时间尺度上，流会话期间的交付模式最受关注。这些研究表明，大型数据集中的视频流行度似乎很符合Zipf定律，但对于一些较小的人群，例如单个大学校园，全球流行度和本地流行度之间的相关性很小。而且，许多视频在数据收集期间只被选中一次。在较短的时间尺度上，已经观察到了一些关于如何在会话期间传送视频的策略。策略选择的主导因素似乎是客户端软件。</p>
+<h4 id="商业技术"><a href="#商业技术" class="headerlink" title="商业技术"></a>商业技术</h4><p>1）逆向工程：一些研究侧重于通过对整个视频流网络体系结构的逆向工程来理解流行的商业流服务的操作。</p>
+<p>一个例子：Adhikari等人[159]通过使用分布式主动测量基础设施（使用PlanetLab节点的多个有利点），分析大量视频播放日志、DNS映射和延迟数据，推断出YouTube内容交付系统背后的关键设计特征。他们揭示了多个DNS名称空间（反映了视频服务器的多层逻辑组织）、三层物理缓存层次结构、处理缓存未命中（后端抓取）和负载平衡的复杂机制。Torres等人[160]使用被动收集的数据来剖析同一服务的服务器选择策略，并试图了解其负载平衡/多宿主策略。</p>
+<p>2）从客户身上衡量：这部分研究侧重于了解更接近客户端的行为。</p>
+<p>一个例子：Liu等人[165]利用服务器端日志分析和客户端实验，对Android和iOS（在移动设备上）访问流媒体服务进行了对比研究。Android和iOS媒体播放器使用不同的内容请求方法和不同的缓冲区管理方法，导致接收到的数据量不同。iOS设备发送的HTTP请求比Android设备多，并且总是使用HTTP范围请求，这与Android设备使用的标准HTTP请求不同。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><h3 id="文章总结"><a href="#文章总结" class="headerlink" title="文章总结"></a>文章总结</h3><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;由于其可扩展性和可行性，DASH已经成为Internet上按需和实时多媒体流的一个引人注目的标准。DASH的核心本质是它的ABR算法，能够选择合适的视频比特率来匹配动态变化的网络条件。DASH规范为研究人员和开发人员探索和实现各种abr提供了灵活性。由于网络条件在客户端最为人所知，因此大多数abr都集中在客户端启发式算法上。然而，也有其他技术利用服务器端算法和网络级解决方案来帮助客户进行速率自适应。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本文综述了关键的码率适配技术，并根据用于视频码率选择的反馈信号对其进行了分类。基于吞吐量的ABR根据过去的数据块下载速率预测未来的网络状况。纯基于缓冲区的算法使用过去和现在的缓冲区占用情况来确定网络状态，并选择与网络容量匹配的视频比特率。大多数实现的算法都是混合算法，将吞吐量和缓冲区结合起来作为反馈信号，以获得更精确的估计。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;基于控制理论的算法将比特率选择过程和各种QoE度量表示为一个随机优化问题。然后，它尝试解决这个问题，并用网络带宽预测范围来驱动比特率选择。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;尽管服务器和网络级别的解决方案提供了显著的优势，但它们要复杂得多，而且不太可能立即部署。</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;另外文中还介绍了一些重要的流量测量和著名商业流媒体公司的特性研究。由于大多数公司拥有专有的流媒体技术，这些研究试图揭示所使用的自适应技术以及DASH在现实世界中的流量模式、行为和影响。其他研究试图了解短跑交通在与各种交叉交通竞争时的特征。</p>
+<h3 id="展望"><a href="#展望" class="headerlink" title="展望"></a>展望</h3><p>仍然存在一些开放的研究挑战和问题，例如：•了解各种ABR算法和不同底层TCP算法之间的相互作用。例如，实验性地分析和描述MPTCP、googlequic或BBR等替代传输协议对基于DASH的内容交付的影响将是流媒体社区非常感兴趣的。</p>
+<p>•在客户端耦合应用程序和传输层，以便DASH客户端使用传输层RTT估计值了解底层路径的延迟。</p>
+<p>•设计客户端ABR算法，与现代瓶颈AQMs进行最佳交互。</p>
+<p>•CDN服务器和代理的战略布局。</p>
+<p>•服务器端带宽管理、资源分配和调整TCP数据包的速度，以平滑流量突发。</p>
+<p>•当多个客户端共享一个瓶颈时，公平地共享数据流和其他交叉流量的资源。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/2.jpg" alt="2"></p>
+ 
+      <!-- reward -->
+      
+      <div id="reword-out">
+        <div id="reward-btn">
+          打赏
+        </div>
+      </div>
+      
+    </div>
+    
+
+    <!-- copyright -->
+    
+    <div class="declare">
+      <ul class="post-copyright">
+        <li>
+          <i class="ri-copyright-line"></i>
+          <strong>版权声明： </strong>
+          
+          本博客所有文章除特别声明外，著作权归作者所有。转载请注明出处！
+          
+        </li>
+      </ul>
+    </div>
+    
+    <footer class="article-footer">
+       
+<div class="share-btn">
+      <span class="share-sns share-outer">
+        <i class="ri-share-forward-line"></i>
+        分享
+      </span>
+      <div class="share-wrap">
+        <i class="arrow"></i>
+        <div class="share-icons">
+          
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="ri-weibo-fill"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="ri-wechat-fill"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="ri-qq-fill"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="ri-douban-line"></i>
+          </a>
+          <!-- <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a> -->
+          
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="ri-facebook-circle-fill"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="ri-twitter-fill"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="ri-google-fill"></i>
+          </a>
+        </div>
+      </div>
+</div>
+
+<div class="wx-share-modal">
+    <a class="modal-close" href="javascript:;"><i class="ri-close-circle-line"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//api.qrserver.com/v1/create-qr-code/?size=150x150&data=http://tritonchen.github.io/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A%20Survey%20of%20Rate%20Adaptation%20Techniques%20for%20Dynamic%20Adaptive%20Streaming%20%20%20Over%20HTTP%EF%BC%88%E4%B8%8B%EF%BC%89/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div id="share-mask"></div>  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/" rel="tag">论文笔记</a></li></ul>
+
+    </footer>
+  </div>
+
+   
+  <nav class="article-nav">
+    
+      <a href="/2021/05/27/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0-1-A-Survey-of-Rate-Adaptation-Techniques-for-Dynamic-Adaptive-Streaming-Over-HTTP/" class="article-nav-link">
+        <strong class="article-nav-caption">上一篇</strong>
+        <div class="article-nav-title">
+          
+            论文笔记-1-A Survey of Rate Adaptation Techniques for Dynamic Adaptive Streaming Over HTTP（上）
+          
+        </div>
+      </a>
+    
+    
+      <a href="/2021/05/25/my-first-blog/" class="article-nav-link">
+        <strong class="article-nav-caption">下一篇</strong>
+        <div class="article-nav-title">My first blog</div>
+      </a>
+    
+  </nav>
+
+   
+<!-- valine评论 -->
+<div id="vcomments-box">
+  <div id="vcomments"></div>
+</div>
+<script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js"></script>
+<script>
+  new Valine({
+    el: "#vcomments",
+    app_id: "",
+    app_key: "",
+    path: window.location.pathname,
+    avatar: "monsterid",
+    placeholder: "给我的文章加点评论吧~",
+    recordIP: true,
+  });
+  const infoEle = document.querySelector("#vcomments .info");
+  if (infoEle && infoEle.childNodes && infoEle.childNodes.length > 0) {
+    infoEle.childNodes.forEach(function (item) {
+      item.parentNode.removeChild(item);
+    });
+  }
+</script>
+<style>
+  #vcomments-box {
+    padding: 5px 30px;
+  }
+
+  @media screen and (max-width: 800px) {
+    #vcomments-box {
+      padding: 5px 0px;
+    }
+  }
+
+  #vcomments-box #vcomments {
+    background-color: #fff;
+  }
+
+  .v .vlist .vcard .vh {
+    padding-right: 20px;
+  }
+
+  .v .vlist .vcard {
+    padding-left: 10px;
+  }
+</style>
+
+ 
+   
+     
+</article>
+
+</section>
+      <footer class="footer">
+  <div class="outer">
+    <ul>
+      <li>
+        Copyrights &copy;
+        2015-2023
+        <i class="ri-heart-fill heart_icon"></i> Tritonchen
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+      </li>
+    </ul>
+    <ul>
+      <li>
+        
+        
+        <span>
+  <span><i class="ri-user-3-fill"></i>访问人数:<span id="busuanzi_value_site_uv"></span></span>
+  <span class="division">|</span>
+  <span><i class="ri-eye-fill"></i>浏览次数:<span id="busuanzi_value_page_pv"></span></span>
+</span>
+        
+      </li>
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      
+    </ul>
+    <ul>
+      <li>
+        <!-- cnzz统计 -->
+        
+      </li>
+    </ul>
+  </div>
+</footer>    
+    </main>
+    <div class="float_btns">
+      <div class="totop" id="totop">
+  <i class="ri-arrow-up-line"></i>
+</div>
+
+<div class="todark" id="todark">
+  <i class="ri-moon-line"></i>
+</div>
+
+    </div>
+    <aside class="sidebar on">
+      <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">主页</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">归档</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/categories">分类</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/tags">标签</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/2019/about">关于我</a>
+    </li>
+    
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      
+      <a class="nav-item-link nav-item-search"  title="搜索">
+        <i class="ri-search-line"></i>
+      </a>
+      
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="ri-rss-line"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+    </aside>
+    <div id="mask"></div>
+
+<!-- #reward -->
+<div id="reward">
+  <span class="close"><i class="ri-close-line"></i></span>
+  <p class="reward-p"><i class="ri-cup-line"></i>请我喝杯咖啡吧~</p>
+  <div class="reward-box">
+    
+    
+    <div class="reward-item">
+      <img class="reward-img" src="https://cdn.jsdelivr.net/gh/Tritonchen/Markdown-image@main/blogs/pictures/wechat.jpg">
+      <span class="reward-type">微信</span>
+    </div>
+    
+  </div>
+</div>
+    
+<script src="/js/jquery-3.6.0.min.js"></script>
+ 
+<script src="/js/lazyload.min.js"></script>
+
+<!-- Tocbot -->
+ 
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  tocbot.init({
+    tocSelector: ".tocbot",
+    contentSelector: ".article-entry",
+    headingSelector: "h1, h2, h3, h4, h5, h6",
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    scrollContainer: "main",
+    positionFixedSelector: ".tocbot",
+    positionFixedClass: "is-position-fixed",
+    fixedSidebarOffset: "auto",
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/jquery-modal@0.9.2/jquery.modal.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js"></script>
+
+<script src="/dist/main.js"></script>
+
+<!-- ImageViewer -->
+ <!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                <!--  Controls are self-explanatory. Order can be changed. -->
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" style="display:none" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css">
+<script src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"></script>
+
+<script>
+    function viewer_init() {
+        let pswpElement = document.querySelectorAll('.pswp')[0];
+        let $imgArr = document.querySelectorAll(('.article-entry img:not(.reward-img)'))
+
+        $imgArr.forEach(($em, i) => {
+            $em.onclick = () => {
+                // slider展开状态
+                // todo: 这样不好，后面改成状态
+                if (document.querySelector('.left-col.show')) return
+                let items = []
+                $imgArr.forEach(($em2, i2) => {
+                    let img = $em2.getAttribute('data-idx', i2)
+                    let src = $em2.getAttribute('data-target') || $em2.getAttribute('src')
+                    let title = $em2.getAttribute('alt')
+                    // 获得原图尺寸
+                    const image = new Image()
+                    image.src = src
+                    items.push({
+                        src: src,
+                        w: image.width || $em2.width,
+                        h: image.height || $em2.height,
+                        title: title
+                    })
+                })
+                var gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, {
+                    index: parseInt(i)
+                });
+                gallery.init()
+            }
+        })
+    }
+    viewer_init()
+</script> 
+<!-- MathJax -->
+
+<!-- Katex -->
+
+<!-- busuanzi  -->
+ 
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+ 
+<!-- ClickLove -->
+
+<!-- ClickBoom1 -->
+
+<!-- ClickBoom2 -->
+
+<!-- CodeCopy -->
+ 
+<link rel="stylesheet" href="/css/clipboard.css">
+ <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+<script>
+  function wait(callback, seconds) {
+    var timelag = null;
+    timelag = window.setTimeout(callback, seconds);
+  }
+  !function (e, t, a) {
+    var initCopyCode = function(){
+      var copyHtml = '';
+      copyHtml += '<button class="btn-copy" data-clipboard-snippet="">';
+      copyHtml += '<i class="ri-file-copy-2-line"></i><span>COPY</span>';
+      copyHtml += '</button>';
+      $(".highlight .code pre").before(copyHtml);
+      $(".article pre code").before(copyHtml);
+      var clipboard = new ClipboardJS('.btn-copy', {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+      clipboard.on('success', function(e) {
+        let $btn = $(e.trigger);
+        $btn.addClass('copied');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('ri-file-copy-2-line');
+        $icon.addClass('ri-checkbox-circle-line');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPIED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('ri-checkbox-circle-line');
+          $icon.addClass('ri-file-copy-2-line');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+      clipboard.on('error', function(e) {
+        e.clearSelection();
+        let $btn = $(e.trigger);
+        $btn.addClass('copy-failed');
+        let $icon = $($btn.find('i'));
+        $icon.removeClass('ri-file-copy-2-line');
+        $icon.addClass('ri-time-line');
+        let $span = $($btn.find('span'));
+        $span[0].innerText = 'COPY FAILED';
+        
+        wait(function () { // 等待两秒钟后恢复
+          $icon.removeClass('ri-time-line');
+          $icon.addClass('ri-file-copy-2-line');
+          $span[0].innerText = 'COPY';
+        }, 2000);
+      });
+    }
+    initCopyCode();
+  }(window, document);
+</script>
+ 
+<!-- CanvasBackground -->
+
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ theme: "forest" });
+  }
+</script>
+
+
+    
+    
+
+  </div>
+</body>
+
+</html>
